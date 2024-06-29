@@ -16,7 +16,7 @@ interface ButtonProps {
 
 const Button = ({
   text,
-  color = "bg-green",
+  color = "bg-green-900",
   padding = "px-[28px] py-[8px]",
   onClick,
   disabled = false,

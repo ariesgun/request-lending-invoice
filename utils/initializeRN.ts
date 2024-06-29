@@ -8,6 +8,7 @@ export const initializeRequestNetwork = (setter: any, walletClient: any) => {
     const requestNetwork = new RequestNetwork({
       nodeConnectionConfig: {
         baseURL: "https://gnosis.gateway.request.network/",
+        // baseURL: "https://sepolia.gateway.request.network/",
       },
       signatureProvider: web3SignatureProvider,
       httpConfig: {

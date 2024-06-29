@@ -18,8 +18,20 @@ const Navbar = () => {
       href: "/",
     },
     {
+      name: "Invoice Dashboard",
+      href: "/dashboard",
+    },
+    {
       name: "Create an Invoice",
       href: "/create-invoice",
+    },
+    {
+      name: "Invoice Financing Marketplace",
+      href: "/marketplace",
+    },
+    {
+      name: "Pay",
+      href: "/pay",
     },
   ];
 
@@ -54,7 +66,7 @@ const Navbar = () => {
             <div
               className={`${
                 router.pathname === link.href &&
-                "h-[4px] bg-green w-full absolute bottom-[-28px]"
+                "h-[4px] bg-green-900 w-full absolute bottom-[-28px]"
               }`}
             ></div>
           </li>
@@ -65,22 +77,13 @@ const Navbar = () => {
           onMouseEnter={() => setIsDocsHovered(true)}
           onMouseLeave={() => setIsDocsHovered(false)}
         >
-          <a
-            target="_blank"
-            rel="noreferrer noopener"
-            href="https://docs.request.network/building-blocks/templates"
-            className="flex items-center gap-[5px] bg-transparent text-green font-medium text-[16px]"
-          >
-            Integrate in your app
-            <ArrowUpRight />
-          </a>
           <div
             className={`${
               isDocsHovered ? "h-[1.5px]" : "h-[0px]"
-            } w-100 bg-green`}
+            } w-100 bg-green-800`}
           ></div>
         </div>
-        <Dropdown title="Need help?" items={supportLinks} />
+        {/* <Dropdown title="Need help?" items={supportLinks} /> */}
         <Button
           text={
             wallet

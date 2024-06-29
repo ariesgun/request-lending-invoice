@@ -1,10 +1,13 @@
-import type { Config } from "tailwindcss";
+import flowbite from "flowbite-react/tailwind";
+const colors = require("tailwindcss/colors");
 
-const config: Config = {
+/** @type {import('tailwindcss').Config} */
+module.exports = {
   content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    flowbite.content(),
   ],
   theme: {
     extend: {
@@ -18,9 +21,9 @@ const config: Config = {
         "dark-blue": "#050B20",
         "dark-green": "#328965",
         "light-green": "#58E1A5",
+        ...colors,
       },
     },
   },
-  plugins: [],
+  plugins: [flowbite.plugin()],
 };
-export default config;

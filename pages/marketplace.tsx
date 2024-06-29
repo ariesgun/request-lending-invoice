@@ -27,7 +27,6 @@ export default function InvoiceMarketplace() {
     }
 
     if (wallet) {
-      console.log("Hey", wallet?.accounts[0].address);
       requestNetwork
         ?.fromIdentity({
           type: Types.Identity.TYPE.ETHEREUM_ADDRESS,
@@ -39,8 +38,6 @@ export default function InvoiceMarketplace() {
               request.getData().extensionsData[0].id ===
               "pn-erc20-transferable-receivable"
           );
-
-          console.log(filteredNFTRequests);
 
           setRequests(filteredNFTRequests);
         });

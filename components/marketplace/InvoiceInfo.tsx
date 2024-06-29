@@ -2,28 +2,21 @@ import { IRequestDataWithEvents } from "@requestnetwork/request-client.js/dist/t
 import moment from "moment";
 import { useEffect, useState } from "react";
 import { DoneIcon, HourGlassIcon } from "../icons";
+import { STATE } from "@requestnetwork/types/dist/request-logic-types";
 
 interface InvoiceInfoProps {
   request: IRequestDataWithEvents;
   isMinted: boolean;
+  isAccepted: boolean;
+  isPaid: boolean;
 }
 
-const InvoiceInfo = ({ request, isMinted }: InvoiceInfoProps) => {
-  const [isAccepted, setIsAccepted] = useState(false);
-  const [isPaid, setIsPaid] = useState(false);
-
-  useEffect(() => {
-    if (request) {
-      if (request.state === "accepted") {
-        setIsAccepted(true);
-
-        if (request?.balance?.balance! >= request?.expectedAmount) {
-          setIsPaid(true);
-        }
-      }
-    }
-  }, [request]);
-
+const InvoiceInfo = ({
+  request,
+  isMinted,
+  isAccepted,
+  isPaid,
+}: InvoiceInfoProps) => {
   return (
     <div className="ml-10">
       <ol className="relative text-gray-500 border-s border-gray-200 dark:border-gray-700 dark:text-gray-400">

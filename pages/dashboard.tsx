@@ -1,6 +1,6 @@
 import("@ariesgun/invoice-dashboard");
 import Head from "next/head";
-import { useEffect, useRef, useState } from "react";
+import { SetStateAction, useEffect, useRef, useState } from "react";
 import { config } from "@/utils/config";
 import { useAppContext } from "@/utils/context";
 import { InvoiceDashboardProps } from "@/types";
@@ -27,7 +27,6 @@ export default function Dashboard() {
     }
 
     if (wallet) {
-      console.log("Hey", wallet?.accounts[0].address);
       requestNetwork
         ?.fromIdentity({
           type: Types.Identity.TYPE.ETHEREUM_ADDRESS,
@@ -39,8 +38,6 @@ export default function Dashboard() {
               request.getData().extensionsData[0].id ===
               "pn-erc20-transferable-receivable"
           );
-
-          console.log(filteredNFTRequests);
 
           setRequests(filteredNFTRequests);
         });
@@ -58,3 +55,6 @@ export default function Dashboard() {
     </>
   );
 }
+
+// TODO:
+// 1.

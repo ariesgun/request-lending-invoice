@@ -3,6 +3,7 @@ import { Button, Modal } from "flowbite-react";
 import { useEffect, useState } from "react";
 import InvoiceInfo from "./InvoiceInfo";
 import {
+  approveErc20,
   approveErc20IfNeeded,
   hasErc20Approval,
   hasReceivableForRequest,
@@ -10,7 +11,7 @@ import {
   payErc20Request,
   payErc20TransferableReceivableRequest,
 } from "@requestnetwork/payment-processor";
-import { useEthersProvider } from "@/utils/etherProvider";
+import { clientToProvider, useEthersProvider } from "@/utils/etherProvider";
 import { useConnectWallet } from "@web3-onboard/react";
 import { Request, Types } from "@requestnetwork/request-client.js";
 import { getRequestPaymentValues } from "@requestnetwork/payment-processor/dist/payment/utils";
@@ -53,10 +54,12 @@ const InvoiceModal = ({ request }: InvoiceModalProps) => {
       transport: custom(window.ethereum!),
     });
     clien.switchChain({ id: targetChain.id });
+    setOpenModal(false);
   };
 
   const onMint = async () => {
-    await mintErc20TransferableReceivable(requestData, signer!);
+    const mintTx = await mintErc20TransferableReceivable(requestData, signer!);
+    await mintTx.wait(2);
 
     setOpenModal(false);
   };
@@ -64,79 +67,83 @@ const InvoiceModal = ({ request }: InvoiceModalProps) => {
   const onAccept = async () => {
     await request.accept({
       type: Types.Identity.TYPE.ETHEREUM_ADDRESS,
-      value: wallet?.accounts[0].address,
+      value: wallet?.accounts[0].address as string,
     });
 
     setOpenModal(false);
   };
 
   const onPay = async () => {
-    console.log(wallet?.accounts[0].address);
-    approveErc20IfNeeded(
+    const hasApproval: boolean = await hasErc20Approval(
       requestData,
       wallet?.accounts[0].address as string,
       signer!
-    ).then((res: any) => {
-      payErc20Request(requestData, signer).then((res) => {
-        console.log(res);
-      });
-    });
+    );
+    if (!hasApproval) {
+      const approvalTx = await approveErc20(requestData, signer!);
+      await approvalTx.wait(2);
+    }
+
+    const paymentTx = await payErc20Request(requestData, signer);
+    await paymentTx.wait(2);
 
     setOpenModal(false);
   };
 
-  useEffect(() => {
+  const onOpen = () => {
     const address = wallet?.accounts[0].address;
 
     if (requestData) {
       setIsPayer(address === requestData.payer?.value);
 
-      if (requestData.state === "accepted") {
-        setIsAccepted(true);
-      }
-      if (requestData?.balance?.balance! >= requestData?.expectedAmount) {
-        setIsPaid(true);
-      }
-
       // Check correct network
-      provider?.getNetwork().then((res) => {
-        const curChain = res.chainId;
-        setIsCorrectChain(curChain === targetChain.id);
-      });
+      provider
+        ?.getNetwork()
+        .then((res) => {
+          const curChain = res.chainId;
+          setIsCorrectChain(curChain === targetChain.id);
 
-      {
-        const { paymentReference, paymentAddress } =
-          getRequestPaymentValues(requestData);
-      }
-      {
-        requestData.state = STATE.CREATED;
-        const { paymentReference, paymentAddress } =
-          getRequestPaymentValues(requestData);
-      }
+          if (isCorrectChain) {
+            if (
+              requestData?.extensionsData[0].id ===
+              "pn-erc20-transferable-receivable"
+            ) {
+              hasReceivableForRequest(requestData, provider!)
+                .then((res) => {
+                  setIsMinted(res);
 
-      if (
-        requestData?.extensionsData[0].id === "pn-erc20-transferable-receivable"
-      ) {
-        hasReceivableForRequest(requestData, provider!)
-          .then((res) => {
-            setIsMinted(res);
-          })
-          .catch((err) => {
-            console.log(err);
-          });
-      } else {
-        setIsMinted(true);
-      }
+                  if (requestData.state === STATE.ACCEPTED) {
+                    setIsAccepted(true);
+                  }
+                  if (
+                    requestData?.balance?.balance! >=
+                    requestData?.expectedAmount
+                  ) {
+                    setIsPaid(true);
+                  }
+                })
+                .catch((err) => {
+                  console.log(err);
+                });
+            } else {
+              setIsMinted(true);
+            }
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     }
 
-    console.log(address, isPayer, isPaid, isMinted, isAccepted);
-  }, [request]);
+    console.log(address, isPayer, isPaid, isMinted, isAccepted, isCorrectChain);
+    setOpenModal(true);
+  };
 
   return (
     <>
       <button
         className="inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-green-600 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-green dark:hover:bg-green-700 dark:focus:ring-green-700"
-        onClick={() => setOpenModal(true)}
+        onClick={onOpen}
       >
         Toggle modal
       </button>
@@ -144,7 +151,12 @@ const InvoiceModal = ({ request }: InvoiceModalProps) => {
         <Modal.Header>History</Modal.Header>
         <Modal.Body>
           <div className="space-y-6">
-            <InvoiceInfo request={requestData} isMinted={isMinted} />
+            <InvoiceInfo
+              request={requestData}
+              isMinted={isMinted}
+              isAccepted={isAccepted}
+              isPaid={isPaid}
+            />
           </div>
         </Modal.Body>
         <Modal.Footer>

@@ -7,11 +7,11 @@ import {
   decodeFunctionResult,
   encodeFunctionData,
   erc20Abi,
-  erc721Abi,
   formatUnits,
   getContract,
   http,
   parseAbi,
+  parseEther,
 } from "viem";
 import { mainnet, polygon, sepolia } from "viem/chains";
 import { BigNumber } from "ethers";
@@ -25,95 +25,44 @@ import {
   parsePaymentNetwork,
 } from "@/utils/requestUtil";
 import { marketplaceABI } from "./marketplaceABI";
-import {
-  getReceivableTokenIdForRequest,
-  hasReceivableForRequest,
-} from "@requestnetwork/payment-processor";
+import { getReceivableTokenIdForRequest } from "@requestnetwork/payment-processor";
 import { useEthersSigner } from "@/utils/etherWagmi";
 
 interface InvoiceProps {
   request: Request;
 }
 
-const InvoiceCard = ({ request }: InvoiceProps) => {
+const NFTCard = ({ request }: InvoiceProps) => {
   const [symbol, setSymbol] = useState("");
   const [decimal, setDecimal] = useState(1);
   const [requestData, setRequestData] = useState(request.getData());
   const signer = useEthersSigner();
 
-  const [isOwner, setIsOwner] = useState(false);
-  const [nftOwner, setNftOwner] = useState("Not Minted");
-
-  let chain = getChainFromRequest(requestData!);
-  const requestId = requestData?.requestId;
-
-  const publicClient = createPublicClient({
-    chain: chain,
-    transport: http(),
-  });
-
-  // eg: Metamask
-  const walletClient = createWalletClient({
-    chain: chain,
-    transport: custom(window.ethereum!),
-  });
-
-  const nftContract = getContract({
-    address: "0xB5E53C3d145Cbaa61C7028736A1fF0bC6817A4c5",
-    abi: erc721Abi,
-    client: {
-      public: publicClient,
-      wallet: walletClient,
-    },
-  });
-
   useEffect(() => {
-    setRequestData(request?.getData());
+    setRequestData(request.getData());
     let assets = getAssetsList(requestData);
 
     setDecimal(assets[requestData?.currencyInfo?.value].decimals);
     setSymbol(assets[requestData?.currencyInfo?.value].symbol);
 
-    const checkOwner = async () => {
-      console.log("A", request?.getData());
-      console.log("A1", signer);
-      const isReceivable = await hasReceivableForRequest(
-        request?.getData(),
-        signer!
-      );
+    console.log("Card", requestData);
+  }, [request]);
 
-      console.log("B");
-      const [account] = await walletClient.getAddresses();
+  const onBuyNFT = async () => {
+    let chain = getChainFromRequest(requestData!);
+    const requestId = requestData?.requestId;
 
-      console.log("C");
-      if (isReceivable) {
-        const tokenId = await getReceivableTokenIdForRequest(
-          requestData!,
-          signer!
-        );
+    const publicClient = createPublicClient({
+      chain: chain,
+      transport: http(),
+    });
 
-        console.log("D");
+    // eg: Metamask
+    const walletClient = createWalletClient({
+      chain: chain,
+      transport: custom(window.ethereum!),
+    });
 
-        if (chain === sepolia) {
-          console.log("Calling owner", tokenId, requestData?.requestId);
-          const owner = await nftContract.read.ownerOf([BigInt(tokenId._hex)]);
-          console.log("Owner", owner);
-          setIsOwner(owner === account);
-          setNftOwner(owner);
-        }
-      } else {
-        setIsOwner(account === requestData?.payee?.value);
-      }
-    };
-
-    if (signer) {
-      checkOwner().catch((err) => {
-        console.log("Error", err);
-      });
-    }
-  }, [request, signer]);
-
-  const onMintNFT = async () => {
     await walletClient.switchChain({ id: chain.id });
 
     const contract = getContract({
@@ -125,38 +74,40 @@ const InvoiceCard = ({ request }: InvoiceProps) => {
       },
     });
 
-    const tokenId = await getReceivableTokenIdForRequest(requestData!, signer!);
-    console.log("TokenId", tokenId);
+    // USDC
+    const tokenContract = getContract({
+      address: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+      abi: erc20Abi,
+      client: {
+        public: publicClient,
+        wallet: walletClient,
+      },
+    });
 
     const [account] = await walletClient.getAddresses();
 
-    const approveResult = await nftContract.simulate.approve(
-      [contract.address, BigInt(tokenId._hex)],
-      { account }
-    );
-    const approveTx = await nftContract.write.approve(
-      [contract.address, BigInt(tokenId._hex)],
-      { account }
-    );
-    console.log("Tx", approveTx);
+    console.log(BigInt(requestData!.expectedAmount));
 
-    await publicClient.waitForTransactionReceipt({
-      hash: approveTx,
+    const approveRes = await tokenContract.simulate.approve(
+      [contract.address, BigInt(requestData!.expectedAmount)],
+      { account }
+    );
+    const approveTx = await tokenContract.write.approve(
+      [contract.address, BigInt(requestData!.expectedAmount)],
+      { account }
+    );
+    await publicClient.waitForTransactionReceipt({ hash: approveTx });
+
+    const tokenId = await getReceivableTokenIdForRequest(requestData!, signer!);
+    console.log("TokenId", tokenId);
+
+    const result = await contract.simulate.buyInvoice([BigInt(tokenId._hex)], {
+      account,
     });
-
-    const result = await contract.simulate.listInvoice(
-      [BigInt(tokenId._hex), requestId],
-      {
-        account,
-      }
-    );
     console.log("Result", result);
-    const mintTx = await contract.write.listInvoice(
-      [BigInt(tokenId._hex), requestId],
-      {
-        account,
-      }
-    );
+    const mintTx = await contract.write.buyInvoice([BigInt(tokenId._hex)], {
+      account,
+    });
   };
 
   return (
@@ -215,7 +166,7 @@ const InvoiceCard = ({ request }: InvoiceProps) => {
           </div>
 
           <div className="mt-2 mb-2">
-            <div className="font-medium text-base text-gray-900">Payee</div>
+            <div className="font-medium text-base text-gray-900">Owner</div>
             <p className="text-gray-700 text-base">
               {requestData?.payee?.value}
             </p>
@@ -254,10 +205,6 @@ const InvoiceCard = ({ request }: InvoiceProps) => {
             </div>
           </div>
         </div>
-        <div className="mt-2 mb-2">
-          <div className="font-medium text-base text-gray-900">NFT Owner</div>
-          <p className="text-gray-700 text-base">{nftOwner}</p>
-        </div>
         <div className="mt-4 pt-2 border-t-2">
           <div className="font-medium text-base text-gray-900">Invoice</div>
           <p className="text-gray-700 text-base">
@@ -275,22 +222,18 @@ const InvoiceCard = ({ request }: InvoiceProps) => {
           <div className="mt-4 md:mt-6">
             <InvoiceModal request={request} />
           </div>
-          {isOwner && (
-            <>
-              <div className="mt-4 md:mt-6">
-                <button
-                  onClick={onMintNFT}
-                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-green-600 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-green-800 dark:hover:bg-green-700 dark:focus:ring-green-700"
-                >
-                  List Invoice
-                </button>
-              </div>
-            </>
-          )}
+          <div className="mt-4 md:mt-6">
+            <button
+              onClick={onBuyNFT}
+              className="inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-green-600 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-green-800 dark:hover:bg-green-700 dark:focus:ring-green-700"
+            >
+              Finance Invoice
+            </button>
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-export default InvoiceCard;
+export default NFTCard;

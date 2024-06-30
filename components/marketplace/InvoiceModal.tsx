@@ -5,6 +5,7 @@ import InvoiceInfo from "./InvoiceInfo";
 import {
   approveErc20,
   approveErc20IfNeeded,
+  getReceivableTokenIdForRequest,
   hasErc20Approval,
   hasReceivableForRequest,
   mintErc20TransferableReceivable,
@@ -17,8 +18,16 @@ import { Request, Types } from "@requestnetwork/request-client.js";
 import { getRequestPaymentValues } from "@requestnetwork/payment-processor/dist/payment/utils";
 import { STATE } from "@requestnetwork/types/dist/request-logic-types";
 import { useEthersSigner } from "@/utils/etherWagmi";
-import { createWalletClient, custom } from "viem";
+import {
+  createPublicClient,
+  createWalletClient,
+  custom,
+  erc721Abi,
+  getContract,
+  http,
+} from "viem";
 import { mainnet, polygon, sepolia } from "viem/chains";
+import { erc721TransferableReceivableAbi } from "./erc721Transferable";
 
 interface InvoiceModalProps {
   request: Request;
@@ -47,6 +56,26 @@ const InvoiceModal = ({ request }: InvoiceModalProps) => {
   } else {
     targetChain = mainnet;
   }
+
+  const publicClient = createPublicClient({
+    chain: targetChain,
+    transport: http(),
+  });
+
+  // eg: Metamask
+  const walletClient = createWalletClient({
+    chain: targetChain,
+    transport: custom(window.ethereum!),
+  });
+
+  const nftContract = getContract({
+    address: "0xB5E53C3d145Cbaa61C7028736A1fF0bC6817A4c5",
+    abi: erc721TransferableReceivableAbi,
+    client: {
+      public: publicClient,
+      wallet: walletClient,
+    },
+  });
 
   const onSwitchChain = async () => {
     const clien = createWalletClient({
@@ -115,12 +144,21 @@ const InvoiceModal = ({ request }: InvoiceModalProps) => {
                   if (requestData.state === STATE.ACCEPTED) {
                     setIsAccepted(true);
                   }
-                  if (
-                    requestData?.balance?.balance! >=
-                    requestData?.expectedAmount
-                  ) {
-                    setIsPaid(true);
-                  }
+
+                  getReceivableTokenIdForRequest(requestData, signer).then(
+                    (tokenId) => {
+                      // Check balance
+                      nftContract.read
+                        .receivableInfoMapping([BigInt(tokenId._hex)])
+                        .then((res) => {
+                          console.log("Balance", res);
+
+                          if (res[2] >= BigInt(requestData?.expectedAmount)) {
+                            setIsPaid(true);
+                          }
+                        });
+                    }
+                  );
                 })
                 .catch((err) => {
                   console.log(err);
@@ -145,7 +183,7 @@ const InvoiceModal = ({ request }: InvoiceModalProps) => {
         className="inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-green-600 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-green dark:hover:bg-green-700 dark:focus:ring-green-700"
         onClick={onOpen}
       >
-        Toggle modal
+        Detail
       </button>
       <Modal show={openModal} onClose={() => setOpenModal(false)}>
         <Modal.Header>History</Modal.Header>

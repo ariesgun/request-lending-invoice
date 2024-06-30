@@ -11,9 +11,7 @@ const InvoiceGrid = ({ requests }: InvoiceGridProps) => {
     <div className="grid grid-cols-3 gap-8">
       {requests.length > 0 &&
         requests.map((request, idx) => (
-          <div>
-            <InvoiceCard key={idx} request={request} />
-          </div>
+          <InvoiceCard key={idx} request={request} />
         ))}
     </div>
   );

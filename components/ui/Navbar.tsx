@@ -1,8 +1,7 @@
-"use client";
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import { useRouter } from "next/router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useConnectWallet } from "@web3-onboard/react";
 import { ArrowUpRight } from "@/icons";
 import { Button, Dropdown } from "../common";
@@ -12,6 +11,7 @@ const Navbar = () => {
   const router = useRouter();
   const [{ wallet }, connect] = useConnectWallet();
   const [isDocsHovered, setIsDocsHovered] = useState(false);
+  const [text, setText] = useState("Connect Wallet");
 
   const links = [
     {
@@ -30,10 +30,6 @@ const Navbar = () => {
       name: "Invoice Financing Marketplace",
       href: "/marketplace",
     },
-    {
-      name: "Pay",
-      href: "/pay",
-    },
   ];
 
   const supportLinks = [
@@ -46,6 +42,12 @@ const Navbar = () => {
       href: "https://discord.com/channels/468974345222619136/1103420140181274645",
     },
   ];
+
+  useEffect(() => {
+    if (wallet) {
+      setText(truncateAddress(wallet.accounts[0].address));
+    }
+  }, [wallet]);
 
   return (
     <nav className="h-full flex items-center p-[20px] gap-[60px] bg-white shadow-small mb-[80px]">
@@ -86,11 +88,7 @@ const Navbar = () => {
         </div>
         {/* <Dropdown title="Need help?" items={supportLinks} /> */}
         <Button
-          text={
-            wallet
-              ? truncateAddress(wallet.accounts[0].address)
-              : "Connect Wallet"
-          }
+          text={text}
           onClick={() => {
             connect();
           }}

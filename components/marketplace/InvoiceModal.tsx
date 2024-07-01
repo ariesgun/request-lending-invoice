@@ -27,7 +27,10 @@ import {
   http,
 } from "viem";
 import { mainnet, polygon, sepolia } from "viem/chains";
-import { erc721TransferableReceivableAbi } from "./erc721Transferable";
+import {
+  erc721TransferableReceivableAbi,
+  erc721TransferableReceivableAddress,
+} from "./erc721Transferable";
 
 interface InvoiceModalProps {
   request: Request;
@@ -70,7 +73,7 @@ const InvoiceModal = ({ request }: InvoiceModalProps) => {
   });
 
   const nftContract = getContract({
-    address: "0xB5E53C3d145Cbaa61C7028736A1fF0bC6817A4c5",
+    address: erc721TransferableReceivableAddress,
     abi: erc721TransferableReceivableAbi,
     client: {
       public: publicClient,

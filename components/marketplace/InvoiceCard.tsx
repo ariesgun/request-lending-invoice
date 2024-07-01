@@ -24,12 +24,13 @@ import {
   getChainFromRequest,
   parsePaymentNetwork,
 } from "@/utils/requestUtil";
-import { marketplaceABI } from "./marketplaceABI";
+import { marketplaceABI, marketplaceAddress } from "./marketplaceABI";
 import {
   getReceivableTokenIdForRequest,
   hasReceivableForRequest,
 } from "@requestnetwork/payment-processor";
 import { useEthersSigner } from "@/utils/etherWagmi";
+import { erc721TransferableReceivableAddress } from "./erc721Transferable";
 
 interface InvoiceProps {
   request: Request;
@@ -59,7 +60,7 @@ const InvoiceCard = ({ request }: InvoiceProps) => {
   });
 
   const nftContract = getContract({
-    address: "0xB5E53C3d145Cbaa61C7028736A1fF0bC6817A4c5",
+    address: erc721TransferableReceivableAddress,
     abi: erc721Abi,
     client: {
       public: publicClient,
@@ -109,7 +110,7 @@ const InvoiceCard = ({ request }: InvoiceProps) => {
     await walletClient.switchChain({ id: chain.id });
 
     const contract = getContract({
-      address: "0xc2B3fE687175a5B6bc81452541356aEd91221be4",
+      address: marketplaceAddress,
       abi: marketplaceABI,
       client: {
         public: publicClient,

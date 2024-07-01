@@ -18,7 +18,10 @@ import {
   getContract,
   http,
 } from "viem";
-import { marketplaceABI } from "@/components/marketplace/marketplaceABI";
+import {
+  marketplaceABI,
+  marketplaceAddress,
+} from "@/components/marketplace/marketplaceABI";
 import { useEthersProvider } from "@/utils/etherProvider";
 import { useEthersSigner } from "@/utils/etherWagmi";
 import { mainnet, polygon, sepolia } from "viem/chains";
@@ -72,7 +75,7 @@ export default function InvoiceMarketplace() {
       await walletClient.switchChain({ id: chain.id });
 
       const contract = getContract({
-        address: "0xc2B3fE687175a5B6bc81452541356aEd91221be4",
+        address: marketplaceAddress,
         abi: marketplaceABI,
         client: {
           public: publicClient,

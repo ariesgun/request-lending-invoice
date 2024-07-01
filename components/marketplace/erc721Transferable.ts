@@ -1,3 +1,5 @@
+export const erc721TransferableReceivableAddress =
+  "0xB5E53C3d145Cbaa61C7028736A1fF0bC6817A4c5";
 export const erc721TransferableReceivableAbi = [
   {
     anonymous: false,

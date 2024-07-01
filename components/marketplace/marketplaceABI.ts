@@ -1,3 +1,4 @@
+export const marketplaceAddress = "0x48854E5754f3784f5A225C892d11abd8a3CCf239";
 export const marketplaceABI = [
   {
     inputs: [

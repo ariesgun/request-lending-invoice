@@ -24,7 +24,7 @@ import {
   getChainFromRequest,
   parsePaymentNetwork,
 } from "@/utils/requestUtil";
-import { marketplaceABI } from "./marketplaceABI";
+import { marketplaceABI, marketplaceAddress } from "./marketplaceABI";
 import { getReceivableTokenIdForRequest } from "@requestnetwork/payment-processor";
 import { useEthersSigner } from "@/utils/etherWagmi";
 
@@ -72,7 +72,7 @@ const NFTCard = ({ request, nftInfo, nftOwner }: InvoiceProps) => {
     const tokenId = await getReceivableTokenIdForRequest(requestData!, signer!);
 
     const contract = getContract({
-      address: "0xc2B3fE687175a5B6bc81452541356aEd91221be4",
+      address: marketplaceAddress,
       abi: marketplaceABI,
       client: {
         public: publicClient,
@@ -104,7 +104,7 @@ const NFTCard = ({ request, nftInfo, nftOwner }: InvoiceProps) => {
     const tokenId = await getReceivableTokenIdForRequest(requestData!, signer!);
 
     const contract = getContract({
-      address: "0xc2B3fE687175a5B6bc81452541356aEd91221be4",
+      address: marketplaceAddress,
       abi: marketplaceABI,
       client: {
         public: publicClient,
@@ -128,7 +128,7 @@ const NFTCard = ({ request, nftInfo, nftOwner }: InvoiceProps) => {
     await walletClient.switchChain({ id: chain.id });
 
     const contract = getContract({
-      address: "0xc2B3fE687175a5B6bc81452541356aEd91221be4",
+      address: marketplaceAddress,
       abi: marketplaceABI,
       client: {
         public: publicClient,

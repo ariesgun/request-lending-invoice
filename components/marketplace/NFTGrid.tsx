@@ -6,7 +6,7 @@ import { useAppContext } from "@/utils/context";
 import NFTCard from "./NFTCard";
 
 interface NFTGRidProps {
-  invoices: any[];
+  invoices: readonly InvoiceNFTType[];
 }
 
 const NFTGrid = ({ invoices }: NFTGRidProps) => {
@@ -14,7 +14,7 @@ const NFTGrid = ({ invoices }: NFTGRidProps) => {
   const [requests, setRequests] = useState<Request[]>([]);
 
   useEffect(() => {
-    const fetchRequest = async (invoices: any[]) => {
+    const fetchRequest = async (invoices: readonly InvoiceNFTType[]) => {
       let newRequests: Request[] = [];
       for (let i = 0; i < invoices.length; i++) {
         let req = await requestNetwork?.fromRequestId(invoices[i].requestId);

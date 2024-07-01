@@ -16,7 +16,7 @@ import {
   mintErc20TransferableReceivable,
   payRequest,
 } from "@requestnetwork/payment-processor";
-import { createWalletClient, custom, http } from "viem";
+import { WalletClient, createWalletClient, custom, http } from "viem";
 import { mainnet, polygon, sepolia } from "viem/chains";
 import { useEthersProvider } from "@/utils/etherProvider";
 import { useEthersSigner } from "@/utils/etherWagmi";
@@ -31,7 +31,7 @@ export default function PayUser() {
   const provider = useEthersProvider();
   const signer = useEthersSigner();
 
-  const [client, setClient] = useState();
+  const [client, setClient] = useState<WalletClient | undefined>(undefined);
 
   useEffect(() => {
     if (dashboardRef.current) {
@@ -43,9 +43,9 @@ export default function PayUser() {
       }
     }
 
-    const clien = createWalletClient({
+    const clien: WalletClient = createWalletClient({
       chain: mainnet,
-      transport: custom(window.ethereum!),
+      transport: custom(window?.ethereum!),
     });
     setClient(clien);
 
@@ -62,7 +62,7 @@ export default function PayUser() {
   }, [wallet, requestNetwork]);
 
   const handleMint = async () => {
-    await client.switchChain({ id: polygon.id });
+    await client?.switchChain({ id: polygon.id });
 
     const identityAddress = "0xA6525F92D9Be3f4067bea30d47D1137194d3aa90";
     let requestData = await requestNetwork?.fromIdentity({

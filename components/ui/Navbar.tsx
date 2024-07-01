@@ -51,7 +51,7 @@ const Navbar = () => {
 
   return (
     <nav className="h-full flex items-center p-[20px] gap-[60px] bg-white shadow-small mb-[80px]">
-      <a
+      <Link
         target="_blank"
         rel="noreferrer noopener"
         href="https://request.network/"
@@ -61,7 +61,7 @@ const Navbar = () => {
           alt="Request Network Logo"
           className="w-[120px]"
         />
-      </a>
+      </Link>
       <ul className="h-full flex gap-[60px]">
         {links.map((link, index) => (
           <li className={`h-full relative text-black`} key={index}>

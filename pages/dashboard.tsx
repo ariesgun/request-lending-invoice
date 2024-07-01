@@ -5,7 +5,7 @@ import { config } from "@/utils/config";
 import { useAppContext } from "@/utils/context";
 import { InvoiceDashboardProps } from "@/types";
 import { useConnectWallet } from "@web3-onboard/react";
-import { Types } from "@requestnetwork/request-client.js";
+import { Request, Types } from "@requestnetwork/request-client.js";
 import InvoiceGrid from "@/components/marketplace/InvoiceGrid";
 import InvoiceModal from "@/components/marketplace/InvoiceModal";
 
@@ -14,7 +14,7 @@ export default function Dashboard() {
   const { requestNetwork } = useAppContext();
   const dashboardRef = useRef<InvoiceDashboardProps>(null);
 
-  const [requests, setRequests] = useState([]);
+  const [requests, setRequests] = useState<Request[]>([]);
   const [network, setNetwork] = useState("sepolia");
 
   useEffect(() => {

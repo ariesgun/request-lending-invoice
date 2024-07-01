@@ -55,7 +55,7 @@ const InvoiceCard = ({ request }: InvoiceProps) => {
   // eg: Metamask
   const walletClient = createWalletClient({
     chain: chain,
-    transport: custom(window.ethereum!),
+    transport: custom(window?.ethereum!),
   });
 
   const nftContract = getContract({

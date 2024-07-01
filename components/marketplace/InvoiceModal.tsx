@@ -65,7 +65,7 @@ const InvoiceModal = ({ request }: InvoiceModalProps) => {
   // eg: Metamask
   const walletClient = createWalletClient({
     chain: targetChain,
-    transport: custom(window.ethereum!),
+    transport: custom(window?.ethereum!),
   });
 
   const nftContract = getContract({
@@ -80,7 +80,7 @@ const InvoiceModal = ({ request }: InvoiceModalProps) => {
   const onSwitchChain = async () => {
     const clien = createWalletClient({
       chain: targetChain,
-      transport: custom(window.ethereum!),
+      transport: custom(window?.ethereum!),
     });
     clien.switchChain({ id: targetChain.id });
     setOpenModal(false);
@@ -145,7 +145,7 @@ const InvoiceModal = ({ request }: InvoiceModalProps) => {
                     setIsAccepted(true);
                   }
 
-                  getReceivableTokenIdForRequest(requestData, signer).then(
+                  getReceivableTokenIdForRequest(requestData, signer!).then(
                     (tokenId) => {
                       // Check balance
                       nftContract.read

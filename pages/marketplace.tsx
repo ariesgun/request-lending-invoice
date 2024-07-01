@@ -32,7 +32,7 @@ export default function InvoiceMarketplace() {
   const provider = useEthersProvider();
   const signer = useEthersSigner();
 
-  const [invoices, setInvoices] = useState([]);
+  const [invoices, setInvoices] = useState<readonly InvoiceNFTType[]>([]);
   const [requests, setRequests] = useState([]);
 
   const [network, setNetwork] = useState("sepolia");
@@ -65,7 +65,7 @@ export default function InvoiceMarketplace() {
       // eg: Metamask
       const walletClient = createWalletClient({
         chain: chain,
-        transport: custom(window.ethereum!),
+        transport: custom(window?.ethereum!),
       });
 
       await walletClient.switchChain({ id: chain.id });
@@ -89,6 +89,7 @@ export default function InvoiceMarketplace() {
 
     if (wallet) {
       getAllListedInvoices().then((nfts) => {
+        console.log("NFTS", nfts);
         setInvoices(nfts);
       });
     }

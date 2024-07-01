@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@ariesgun/create-invoice-form": "^0.5.2",
+    "@ariesgun/create-invoice-form": "^0.5.4",
     "@ariesgun/invoice-dashboard": "^0.4.5",
     "@ariesgun/shared": "^0.4.1",
     "@requestnetwork/payment-processor": "^0.45.1-next.2047",

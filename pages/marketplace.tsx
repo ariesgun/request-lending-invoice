@@ -23,6 +23,7 @@ import { useEthersProvider } from "@/utils/etherProvider";
 import { useEthersSigner } from "@/utils/etherWagmi";
 import { mainnet, polygon, sepolia } from "viem/chains";
 import NFTGrid from "@/components/marketplace/NFTGrid";
+import NFTMarketplace from "@/components/marketplace/NFTMarketplace";
 
 export default function InvoiceMarketplace() {
   const [{ wallet }] = useConnectWallet();
@@ -119,7 +120,7 @@ export default function InvoiceMarketplace() {
             <option value="mainnet">Etherum</option> */}
           </select>
         </div>
-        <NFTGrid invoices={invoices} />
+        <NFTMarketplace invoices={invoices} />
       </div>
     </>
   );

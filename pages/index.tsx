@@ -33,7 +33,7 @@ export default function InvoiceDashboard() {
           <div className="flex mt-4 md:mt-6">
             <Link
               href="/create-invoice"
-              className="inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-green rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-green dark:hover:bg-light-green dark:focus:ring-light-green"
+              className="inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-green-800 rounded-lg hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-green dark:hover:bg-light-green dark:focus:ring-light-green"
             >
               Create Invoice
             </Link>

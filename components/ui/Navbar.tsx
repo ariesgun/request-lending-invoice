@@ -23,10 +23,6 @@ const Navbar = () => {
       href: "/dashboard",
     },
     {
-      name: "Create an Invoice",
-      href: "/create-invoice",
-    },
-    {
       name: "Invoice Financing Marketplace",
       href: "/marketplace",
     },

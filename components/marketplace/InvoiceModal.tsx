@@ -47,6 +47,7 @@ const InvoiceModal = ({ request }: InvoiceModalProps) => {
   const [isPaid, setIsPaid] = useState(false);
   const [isPayer, setIsPayer] = useState(false);
   const [isCorrectChain, setIsCorrectChain] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
   let targetChain;
   if (requestData?.currencyInfo?.network === "matic") {
@@ -122,58 +123,53 @@ const InvoiceModal = ({ request }: InvoiceModalProps) => {
   const onOpen = () => {
     const address = wallet?.accounts[0].address;
 
-    if (requestData) {
-      setIsPayer(address === requestData.payer?.value);
+    setIsLoading(true);
+    setIsPayer(address === requestData.payer?.value);
 
-      // Check correct network
-      provider
-        ?.getNetwork()
-        .then((res) => {
-          const curChain = res.chainId;
-          setIsCorrectChain(curChain === targetChain.id);
+    const fetchData = async () => {
+      let curNetwork = await provider?.getNetwork();
+      const curChain = curNetwork?.chainId;
+      setIsCorrectChain(curChain === targetChain.id);
 
-          if (isCorrectChain) {
-            if (
-              requestData?.extensionsData[0].id ===
-              "pn-erc20-transferable-receivable"
-            ) {
-              hasReceivableForRequest(requestData, provider!)
-                .then((res) => {
-                  setIsMinted(res);
+      if (isCorrectChain) {
+        if (
+          requestData?.extensionsData[0].id ===
+          "pn-erc20-transferable-receivable"
+        ) {
+          const hasReceivable = await hasReceivableForRequest(
+            requestData,
+            provider!
+          );
+          setIsMinted(hasReceivable);
 
-                  if (requestData.state === STATE.ACCEPTED) {
-                    setIsAccepted(true);
-                  }
-
-                  getReceivableTokenIdForRequest(requestData, signer!).then(
-                    (tokenId) => {
-                      // Check balance
-                      nftContract.read
-                        .receivableInfoMapping([BigInt(tokenId._hex)])
-                        .then((res) => {
-                          console.log("Balance", res);
-
-                          if (res[2] >= BigInt(requestData?.expectedAmount)) {
-                            setIsPaid(true);
-                          }
-                        });
-                    }
-                  );
-                })
-                .catch((err) => {
-                  console.log(err);
-                });
-            } else {
-              setIsMinted(true);
-            }
+          if (requestData.state === STATE.ACCEPTED) {
+            setIsAccepted(true);
           }
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    }
+
+          const tokenId = await getReceivableTokenIdForRequest(
+            requestData,
+            signer!
+          );
+          const balance = await nftContract.read.receivableInfoMapping([
+            BigInt(tokenId._hex),
+          ]);
+          console.log("Balance", balance);
+
+          if (balance[2] >= BigInt(requestData?.expectedAmount)) {
+            setIsPaid(true);
+          }
+        } else {
+          setIsMinted(true);
+        }
+      }
+    };
 
     console.log(address, isPayer, isPaid, isMinted, isAccepted, isCorrectChain);
+    fetchData()
+      .then(() => {
+        setIsLoading(false);
+      })
+      .catch((err) => console.log(err));
     setOpenModal(true);
   };
 
@@ -188,12 +184,17 @@ const InvoiceModal = ({ request }: InvoiceModalProps) => {
       <Modal show={openModal} onClose={() => setOpenModal(false)}>
         <Modal.Header>History</Modal.Header>
         <Modal.Body>
-          <div className="space-y-6">
+          <div
+            className={
+              "space-y-6 " + (isLoading ? "opacity-20" : "opacity-100")
+            }
+          >
             <InvoiceInfo
               request={requestData}
               isMinted={isMinted}
               isAccepted={isAccepted}
               isPaid={isPaid}
+              isLoading={isLoading}
             />
           </div>
         </Modal.Body>
@@ -202,11 +203,13 @@ const InvoiceModal = ({ request }: InvoiceModalProps) => {
             <Button onClick={onSwitchChain}>Switch Chain</Button>
           ) : (
             <>
-              {!isPayer && !isMinted && <Button onClick={onMint}>Mint</Button>}
-              {isPayer && isMinted && !isAccepted && (
+              {!isLoading && !isPayer && !isMinted && (
+                <Button onClick={onMint}>Mint</Button>
+              )}
+              {!isLoading && isPayer && isMinted && !isAccepted && (
                 <Button onClick={onAccept}>Accept</Button>
               )}
-              {isPayer && isMinted && isAccepted && !isPaid && (
+              {!isLoading && isPayer && isMinted && isAccepted && !isPaid && (
                 <Button onClick={onPay}>Pay</Button>
               )}
             </>

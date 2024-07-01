@@ -7,9 +7,10 @@ import NFTCard from "./NFTCard";
 
 interface NFTGRidProps {
   invoices: readonly InvoiceNFTType[];
+  nftOwner: boolean;
 }
 
-const NFTGrid = ({ invoices }: NFTGRidProps) => {
+const NFTGrid = ({ invoices, nftOwner }: NFTGRidProps) => {
   const { requestNetwork } = useAppContext();
   const [requests, setRequests] = useState<Request[]>([]);
 
@@ -30,7 +31,14 @@ const NFTGrid = ({ invoices }: NFTGRidProps) => {
   return (
     <div className="grid grid-cols-3 gap-8">
       {requests.length > 0 &&
-        requests.map((request, idx) => <NFTCard key={idx} request={request} />)}
+        requests.map((request, idx) => (
+          <NFTCard
+            key={idx}
+            request={request}
+            nftOwner={nftOwner}
+            nftInfo={invoices[idx]}
+          />
+        ))}
     </div>
   );
 };

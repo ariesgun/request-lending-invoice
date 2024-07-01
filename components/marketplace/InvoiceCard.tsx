@@ -75,29 +75,21 @@ const InvoiceCard = ({ request }: InvoiceProps) => {
     setSymbol(assets[requestData?.currencyInfo?.value].symbol);
 
     const checkOwner = async () => {
-      console.log("A", request?.getData());
-      console.log("A1", signer);
       const isReceivable = await hasReceivableForRequest(
         request?.getData(),
         signer!
       );
 
-      console.log("B");
       const [account] = await walletClient.getAddresses();
 
-      console.log("C");
       if (isReceivable) {
         const tokenId = await getReceivableTokenIdForRequest(
           requestData!,
           signer!
         );
 
-        console.log("D");
-
         if (chain === sepolia) {
-          console.log("Calling owner", tokenId, requestData?.requestId);
           const owner = await nftContract.read.ownerOf([BigInt(tokenId._hex)]);
-          console.log("Owner", owner);
           setIsOwner(owner === account);
           setNftOwner(owner);
         }

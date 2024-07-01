@@ -125,8 +125,6 @@ const NFTCard = ({ request, nftInfo, nftOwner }: InvoiceProps) => {
   };
 
   const onBuyNFT = async () => {
-    const requestId = requestData?.requestId;
-
     await walletClient.switchChain({ id: chain.id });
 
     const contract = getContract({
@@ -139,8 +137,9 @@ const NFTCard = ({ request, nftInfo, nftOwner }: InvoiceProps) => {
     });
 
     // USDC
+    const tokenAddress = requestData?.currencyInfo.value;
     const tokenContract = getContract({
-      address: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+      address: tokenAddress as `0x${string}`,
       abi: erc20Abi,
       client: {
         public: publicClient,

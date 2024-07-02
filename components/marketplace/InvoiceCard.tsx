@@ -43,6 +43,7 @@ const InvoiceCard = ({ request }: InvoiceProps) => {
   const signer = useEthersSigner();
 
   const [isOwner, setIsOwner] = useState(false);
+  const [isMinted, setIsMinted] = useState(false);
   const [nftOwner, setNftOwner] = useState("Not Minted");
 
   let chain = getChainFromRequest(requestData!);
@@ -92,6 +93,7 @@ const InvoiceCard = ({ request }: InvoiceProps) => {
         if (chain === sepolia) {
           const owner = await nftContract.read.ownerOf([BigInt(tokenId._hex)]);
           setIsOwner(owner === account);
+          setIsMinted(true);
           setNftOwner(owner);
         }
       } else {

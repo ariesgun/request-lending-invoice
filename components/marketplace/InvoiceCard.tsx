@@ -173,21 +173,21 @@ const InvoiceCard = ({ request }: InvoiceProps) => {
       );
       console.log("Tx", approveTx);
       setIsApproved(true);
-    } else {
-      const result = await contract.simulate.listInvoice(
-        [BigInt(tokenId._hex), requestId],
-        {
-          account,
-        }
-      );
-      console.log("Result", result);
-      const mintTx = await contract.write.listInvoice(
-        [BigInt(tokenId._hex), requestId],
-        {
-          account,
-        }
-      );
     }
+
+    const result = await contract.simulate.listInvoice(
+      [BigInt(tokenId._hex), requestId],
+      {
+        account,
+      }
+    );
+    console.log("Result", result);
+    const mintTx = await contract.write.listInvoice(
+      [BigInt(tokenId._hex), requestId],
+      {
+        account,
+      }
+    );
   };
 
   return (
@@ -316,7 +316,7 @@ const InvoiceCard = ({ request }: InvoiceProps) => {
                 onClick={onMintNFT}
                 className="inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-green-600 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-green-800 dark:hover:bg-green-700 dark:focus:ring-green-700"
               >
-                {!isApproved ? "Approve Invoice Listing" : "List Invoice"}
+                {!isApproved ? "Approve & List Invoice" : "List Invoice"}
               </button>
             </div>
           )}

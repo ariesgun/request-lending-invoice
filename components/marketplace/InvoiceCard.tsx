@@ -30,7 +30,10 @@ import {
   hasReceivableForRequest,
 } from "@requestnetwork/payment-processor";
 import { useEthersSigner } from "@/utils/etherWagmi";
-import { erc721TransferableReceivableAddress } from "./erc721Transferable";
+import {
+  erc721TransferableReceivableAbi,
+  erc721TransferableReceivableAddress,
+} from "./erc721Transferable";
 
 interface InvoiceProps {
   request: Request;
@@ -44,6 +47,9 @@ const InvoiceCard = ({ request }: InvoiceProps) => {
 
   const [isOwner, setIsOwner] = useState(false);
   const [isMinted, setIsMinted] = useState(false);
+  const [isApproved, setIsApproved] = useState(false);
+  const [isPaid, setIsPaid] = useState(false);
+  const [isListed, setIsListed] = useState(false);
   const [nftOwner, setNftOwner] = useState("Not Minted");
 
   let chain = getChainFromRequest(requestData!);
@@ -62,7 +68,16 @@ const InvoiceCard = ({ request }: InvoiceProps) => {
 
   const nftContract = getContract({
     address: erc721TransferableReceivableAddress,
-    abi: erc721Abi,
+    abi: erc721TransferableReceivableAbi,
+    client: {
+      public: publicClient,
+      wallet: walletClient,
+    },
+  });
+
+  const marketplaceContract = getContract({
+    address: marketplaceAddress,
+    abi: marketplaceABI,
     client: {
       public: publicClient,
       wallet: walletClient,
@@ -93,6 +108,27 @@ const InvoiceCard = ({ request }: InvoiceProps) => {
         if (chain === sepolia) {
           const owner = await nftContract.read.ownerOf([BigInt(tokenId._hex)]);
           setIsOwner(owner === account);
+
+          const balance = await nftContract.read.receivableInfoMapping([
+            BigInt(tokenId._hex),
+          ]);
+
+          if (balance[2] >= BigInt(requestData?.expectedAmount)) {
+            setIsPaid(true);
+          }
+
+          const approved = await nftContract.read.getApproved([
+            BigInt(tokenId._hex),
+          ]);
+
+          // CHeck if listed
+          const listed = await marketplaceContract.read.listings([
+            BigInt(tokenId._hex),
+          ]);
+          console.log(listed);
+          setIsListed(listed[2]);
+
+          setIsApproved(approved === marketplaceAddress);
           setIsMinted(true);
           setNftOwner(owner);
         }
@@ -125,33 +161,33 @@ const InvoiceCard = ({ request }: InvoiceProps) => {
 
     const [account] = await walletClient.getAddresses();
 
-    const approveResult = await nftContract.simulate.approve(
-      [contract.address, BigInt(tokenId._hex)],
-      { account }
-    );
-    const approveTx = await nftContract.write.approve(
-      [contract.address, BigInt(tokenId._hex)],
-      { account }
-    );
-    console.log("Tx", approveTx);
-
-    await publicClient.waitForTransactionReceipt({
-      hash: approveTx,
-    });
-
-    const result = await contract.simulate.listInvoice(
-      [BigInt(tokenId._hex), requestId],
-      {
-        account,
-      }
-    );
-    console.log("Result", result);
-    const mintTx = await contract.write.listInvoice(
-      [BigInt(tokenId._hex), requestId],
-      {
-        account,
-      }
-    );
+    const approved = await nftContract.read.getApproved([BigInt(tokenId._hex)]);
+    if (approved !== marketplaceAddress) {
+      const approveResult = await nftContract.simulate.approve(
+        [contract.address, BigInt(tokenId._hex)],
+        { account }
+      );
+      const approveTx = await nftContract.write.approve(
+        [contract.address, BigInt(tokenId._hex)],
+        { account }
+      );
+      console.log("Tx", approveTx);
+      setIsApproved(true);
+    } else {
+      const result = await contract.simulate.listInvoice(
+        [BigInt(tokenId._hex), requestId],
+        {
+          account,
+        }
+      );
+      console.log("Result", result);
+      const mintTx = await contract.write.listInvoice(
+        [BigInt(tokenId._hex), requestId],
+        {
+          account,
+        }
+      );
+    }
   };
 
   return (
@@ -274,17 +310,25 @@ const InvoiceCard = ({ request }: InvoiceProps) => {
           <div className="mt-4 md:mt-6">
             <InvoiceModal request={request} />
           </div>
-          {isOwner && isMinted && (
-            <>
-              <div className="mt-4 md:mt-6">
-                <button
-                  onClick={onMintNFT}
-                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-green-600 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-green-800 dark:hover:bg-green-700 dark:focus:ring-green-700"
-                >
-                  List Invoice
-                </button>
-              </div>
-            </>
+          {isOwner && isMinted && !isPaid && !isListed && (
+            <div className="mt-4 md:mt-6">
+              <button
+                onClick={onMintNFT}
+                className="inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-green-600 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-green-800 dark:hover:bg-green-700 dark:focus:ring-green-700"
+              >
+                {!isApproved ? "Approve Invoice Listing" : "List Invoice"}
+              </button>
+            </div>
+          )}
+          {isListed && (
+            <div className="mt-4 md:mt-6">
+              <button
+                disabled
+                className="inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-gray-600 rounded-lg focus:ring-4 focus:outline-none focus:ring-gray-300 dark:bg-gray-800 dark:focus:ring-gray-700"
+              >
+                Listed
+              </button>
+            </div>
           )}
         </div>
       </div>

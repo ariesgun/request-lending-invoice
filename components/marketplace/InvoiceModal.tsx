@@ -127,7 +127,7 @@ const InvoiceModal = ({ request }: InvoiceModalProps) => {
     const address = wallet?.accounts[0].address;
 
     setIsLoading(true);
-    setIsPayer(address === requestData.payer?.value);
+    setIsPayer(address === requestData.payer?.value.toLowerCase());
 
     const fetchData = async () => {
       let curNetwork = await provider?.getNetwork();
@@ -143,6 +143,7 @@ const InvoiceModal = ({ request }: InvoiceModalProps) => {
             requestData,
             provider!
           );
+          console.log("Has receibale", hasReceivable);
           setIsMinted(hasReceivable);
 
           if (requestData.state === STATE.ACCEPTED) {
@@ -167,10 +168,18 @@ const InvoiceModal = ({ request }: InvoiceModalProps) => {
       }
     };
 
-    console.log(address, isPayer, isPaid, isMinted, isAccepted, isCorrectChain);
     fetchData()
       .then(() => {
         setIsLoading(false);
+        console.log(
+          requestData,
+          address,
+          isPayer,
+          isPaid,
+          isMinted,
+          isAccepted,
+          isCorrectChain
+        );
       })
       .catch((err) => console.log(err));
     setOpenModal(true);

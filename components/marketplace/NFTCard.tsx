@@ -202,24 +202,25 @@ const NFTCard = ({ request, nftInfo, nftOwner }: InvoiceProps) => {
                 <p className="text-gray-700 text-base">
                   {requestData?.contentData?.buyerInfo?.firstName}{" "}
                   {requestData?.contentData?.buyerInfo?.lastName}
-                  {" ("}
-                  {requestData?.contentData?.sellerInfo?.email}
-                  {") "}
                 </p>
+                {requestData?.contentData?.sellerInfo?.email && (
+                  <p className="text-gray-700 text-base">
+                    {requestData?.contentData?.sellerInfo?.email}
+                  </p>
+                )}
                 <p className="text-gray-700 text-base">
-                  {" "}
                   {requestData?.contentData?.buyerInfo?.businessName}
                 </p>
-                <p className="text-gray-700 text-base">
-                  {" "}
-                  {requestData?.contentData?.sellerInfo?.address?.locality}
-                  {", "}
-                  {
-                    requestData?.contentData?.sellerInfo?.address?.[
-                      "country-name"
-                    ]
-                  }
-                </p>
+                {requestData?.contentData?.sellerInfo?.address && (
+                  <p className="text-gray-700 text-base">
+                    {requestData?.contentData?.sellerInfo?.address?.locality}{" "}
+                    {
+                      requestData?.contentData?.sellerInfo?.address?.[
+                        "country-name"
+                      ]
+                    }
+                  </p>
+                )}
               </>
             ) : (
               <>
@@ -229,7 +230,7 @@ const NFTCard = ({ request, nftInfo, nftOwner }: InvoiceProps) => {
           </div>
 
           <div className="mt-2 mb-2">
-            <div className="font-medium text-base text-gray-900">NFT Owner</div>
+            <div className="font-medium text-base text-gray-900">Payee</div>
             <p className="text-gray-700 text-base">
               {requestData?.payee?.value}
             </p>
@@ -237,26 +238,29 @@ const NFTCard = ({ request, nftInfo, nftOwner }: InvoiceProps) => {
               {requestData?.contentData?.buyerInfo?.firstName ? (
                 <>
                   <p className="text-gray-700 text-base">
-                    {requestData?.contentData?.sellerInfo?.firstName}{" "}
-                    {requestData?.contentData?.sellerInfo?.lastName}
-                    {" ("}
-                    {requestData?.contentData?.sellerInfo?.email}
-                    {") "}
+                    {requestData?.contentData?.sellerInfo?.firstName +
+                      " " +
+                      requestData?.contentData?.sellerInfo?.lastName}
                   </p>
+                  {requestData?.contentData?.sellerInfo?.email && (
+                    <p className="text-gray-700 text-base">
+                      {requestData?.contentData?.sellerInfo?.email}
+                    </p>
+                  )}
                   <p className="text-gray-700 text-base">
                     {" "}
                     {requestData?.contentData?.sellerInfo?.businessName}
                   </p>
-                  <p className="text-gray-700 text-base">
-                    {" "}
-                    {requestData?.contentData?.sellerInfo?.address?.locality}
-                    {", "}
-                    {
-                      requestData?.contentData?.sellerInfo?.address?.[
-                        "country-name"
-                      ]
-                    }
-                  </p>
+                  {requestData?.contentData?.sellerInfo?.address && (
+                    <p className="text-gray-700 text-base">
+                      {requestData?.contentData?.sellerInfo?.address?.locality}{" "}
+                      {
+                        requestData?.contentData?.sellerInfo?.address?.[
+                          "country-name"
+                        ]
+                      }
+                    </p>
+                  )}
                 </>
               ) : (
                 <>

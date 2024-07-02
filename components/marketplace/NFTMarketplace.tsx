@@ -21,6 +21,7 @@ const NFTMarketplace = ({ invoices }: NFTMarketplaceProps) => {
   const [{ wallet }] = useConnectWallet();
 
   useEffect(() => {
+    console.log(invoices);
     let otherNfts: readonly InvoiceNFTType[] = invoices.filter(
       (invoice) => invoice.owner.toLowerCase() !== wallet?.accounts[0].address
     );

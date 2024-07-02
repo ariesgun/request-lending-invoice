@@ -272,7 +272,7 @@ const InvoiceCard = ({ request }: InvoiceProps) => {
           <div className="mt-4 md:mt-6">
             <InvoiceModal request={request} />
           </div>
-          {isOwner && (
+          {isOwner && isMinted && (
             <>
               <div className="mt-4 md:mt-6">
                 <button

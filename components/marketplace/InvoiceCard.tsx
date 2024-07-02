@@ -172,6 +172,11 @@ const InvoiceCard = ({ request }: InvoiceProps) => {
         { account }
       );
       console.log("Tx", approveTx);
+
+      await publicClient.waitForTransactionReceipt({
+        hash: approveTx,
+      });
+
       setIsApproved(true);
     }
 

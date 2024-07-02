@@ -127,7 +127,9 @@ const InvoiceModal = ({ request }: InvoiceModalProps) => {
     const address = wallet?.accounts[0].address;
 
     setIsLoading(true);
-    setIsPayer(address === requestData.payer?.value.toLowerCase());
+    setIsPayer(
+      address?.toLowerCase() === requestData.payer?.value.toLowerCase()
+    );
 
     const fetchData = async () => {
       let curNetwork = await provider?.getNetwork();

@@ -21,13 +21,17 @@ const NFTMarketplace = ({ invoices }: NFTMarketplaceProps) => {
   const [{ wallet }] = useConnectWallet();
 
   useEffect(() => {
-    console.log(invoices);
+    console.log(invoices, wallet?.accounts[0].address);
     let otherNfts: readonly InvoiceNFTType[] = invoices.filter(
-      (invoice) => invoice.owner.toLowerCase() !== wallet?.accounts[0].address
+      (invoice) =>
+        invoice.owner.toLowerCase() !==
+        wallet?.accounts[0].address.toLowerCase()
     );
 
     let myNfts: readonly InvoiceNFTType[] = invoices.filter(
-      (invoice) => invoice.owner.toLowerCase() === wallet?.accounts[0].address
+      (invoice) =>
+        invoice.owner.toLowerCase() ===
+        wallet?.accounts[0].address.toLowerCase()
     );
 
     setListedNfts(otherNfts);
